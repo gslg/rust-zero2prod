@@ -1,3 +1,5 @@
+// 刚开始我开了代理，一直测试不成功，状态一直502...。
+// 关闭代理后就测试通过了.
 #[tokio::test]
 async fn health_check_works() {
     // No .await, no .expect
@@ -15,7 +17,6 @@ async fn health_check_works() {
         .expect("Failed to execute request.");
 
     // Assert
-    println!("status: {}", response.status().as_u16());
     assert!(response.status().is_success());
     assert_eq!(Some(0), response.content_length());
 }
