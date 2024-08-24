@@ -1,6 +1,6 @@
 use std::net::TcpListener;
 
-use sqlx::{database, Connection, Executor, PgConnection, PgPool};
+use sqlx::{Executor, PgPool};
 use uuid::Uuid;
 use zero2prod::configuration::{get_configuration, DatabaseSettings};
 
