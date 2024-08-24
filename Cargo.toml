@@ -20,4 +20,9 @@ name="zero2prod"
 [dependencies]
 actix-web = "4.9.0"
 reqwest = "0.12.7"
+# We need the optional `derive` feature to use `serde`'s procedural macros:
+# `#[derive(Serialize)]` and `#[derive(Deserialize)]`.
+# The feature is not enabled by default to avoid pulling in
+# unnecessary dependencies for projects that do not need it.
+serde = {version = "1.0.208", features = ["derive"]}
 tokio = { version = "1.39.3", features = ["macros", "rt-multi-thread"] }
