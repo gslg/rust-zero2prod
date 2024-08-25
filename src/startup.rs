@@ -1,9 +1,9 @@
 use std::{net::TcpListener, sync::Mutex};
 
-use actix_web::{dev::Server, web, App, HttpServer};
-use sqlx::{PgConnection, PgPool};
-
 use crate::routes::{health_check, subscribe};
+use actix_web::middleware::Logger;
+use actix_web::{dev::Server, web, App, HttpServer};
+use sqlx::PgPool;
 
 // Notice the different signature!
 // We return `Server` on the happy path and we dropped the `async` keyword
@@ -14,6 +14,7 @@ pub fn run(listener: TcpListener, db_pool: PgPool) -> Result<Server, std::io::Er
 
     let server = HttpServer::new(move || {
         App::new()
+            .wrap(Logger::default())
             .route("/health_check", web::get().to(health_check))
             // A new entry in our routing table for POST /subscriptions requests
             .route("/subscriptions", web::post().to(subscribe))
