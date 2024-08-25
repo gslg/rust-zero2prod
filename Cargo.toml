@@ -30,6 +30,7 @@ reqwest = "0.12.7"
 # unnecessary dependencies for projects that do not need it.
 serde = { version = "1.0.208", features = ["derive"] }
 tokio = { version = "1.39.3", features = ["macros", "rt-multi-thread"] }
+tracing = { version = "0.1.40", features = ["log"] }
 uuid = { version = "1.10.0", features = ["v4"] }
 
 # Using table-like toml syntax to avoid a super-long line!
