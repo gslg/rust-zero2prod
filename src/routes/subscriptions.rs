@@ -1,6 +1,7 @@
 use actix_web::{web, HttpResponse};
 use chrono::Utc;
 use sqlx::PgPool;
+use tracing::Instrument;
 use uuid::Uuid;
 
 #[derive(serde::Deserialize)]
@@ -12,16 +13,30 @@ pub struct FormData {
 //  always return a 200 OK
 pub async fn subscribe(form: web::Form<FormData>, pool: web::Data<PgPool>) -> HttpResponse {
     let request_id = Uuid::new_v4();
-    tracing::info!(
-        "request_id {} - Adding '{}' '{}' as a new subscriber.",
-        request_id,
-        form.email,
-        form.name
+
+    // Spans, like logs, have an assosciated level
+    // `info_span` creates a span at the info-level
+    let request_span = tracing::info_span!(
+        "Adding a new subscriber.",
+        %request_id,
+        subscriber_email = %form.email,
+        subscriber_name = %form.name
     );
-    tracing::info!(
-        "request_id {} - Saving new subscriber details in the database",
-        request_id
-    );
+
+    // Using `enter` in an async function is a recipe for disaster!
+    // Bear with me for now, but don't do this at home.
+    // See the following section on `Instrumenting Futures`
+    let _request_span_guard = request_span.enter();
+
+    let query_span = tracing::info_span!("Saving new subscriber details in the database");
+
+    // We do not call `.enter` on query_span!
+    // `.instrument` takes care of it at the right moments
+    // in the query future lifetime
+    // tracing::info!(
+    //     "request_id {} - Saving new subscriber details in the database",
+    //     request_id
+    // );
 
     // `Result` has two variants: `Ok` and `Err`.
     // The first for successes, the second for failures.
@@ -42,6 +57,8 @@ pub async fn subscribe(form: web::Form<FormData>, pool: web::Data<PgPool>) -> Ht
     // wrapped by `web::Data`.
     // Using the pool as a drop-in replacement
     .execute(pool.get_ref())
+    // First we attach the instrumentation, then we `.await` it
+    .instrument(query_span)
     .await;
 
     match result {
@@ -61,4 +78,6 @@ pub async fn subscribe(form: web::Form<FormData>, pool: web::Data<PgPool>) -> Ht
             HttpResponse::InternalServerError().finish()
         }
     }
+    // `_request_span_guard` is dropped at the end of `subscribe`
+    // That's when we "exit" the span
 }
