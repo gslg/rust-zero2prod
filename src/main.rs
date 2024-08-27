@@ -3,6 +3,7 @@ use std::net::TcpListener;
 use sqlx::PgPool;
 use tracing::subscriber::set_global_default;
 use tracing_bunyan_formatter::{BunyanFormattingLayer, JsonStorageLayer};
+use tracing_log::LogTracer;
 use tracing_subscriber::{layer::SubscriberExt, EnvFilter, Registry};
 use zero2prod::{configuration::get_configuration, startup::run};
 
@@ -11,7 +12,8 @@ async fn main() -> Result<(), std::io::Error> {
     // Bubble up the io::Error if we failed to bind the address
     // Otherwise call .await on our Server
 
-    // We removed the `env_logger` line we had before!
+    // Redirect all `log`'s events to our subscriber
+    LogTracer::init().expect("Failed to set logger");
 
     // We are falling back to printing all spans at info-level or above
     // if the RUST_LOG environment variable has not been set.
