@@ -1,8 +1,30 @@
 use std::net::TcpListener;
 
+use once_cell::sync::Lazy;
 use sqlx::{Executor, PgPool};
 use uuid::Uuid;
-use zero2prod::configuration::{get_configuration, DatabaseSettings};
+use zero2prod::{
+    configuration::{get_configuration, DatabaseSettings},
+    telemetry::{get_subscriber, init_subscriber},
+};
+
+// Ensure that the `tracing` stack is only initialised once using `once_cell`
+static TRACING: Lazy<()> = Lazy::new(|| {
+    let default_filter_level = "info".to_string();
+    let subscriber_name = "test".to_string();
+
+    // We cannot assign the output of `get_subscriber` to a variable based on the
+    // value TEST_LOG` because the sink is part of the type returned by
+    // `get_subscriber`, therefore they are not the same type. We could work around
+    // it, but this is the most straight-forward way of moving forward.
+    if std::env::var("TEST_LOG").is_ok() {
+        let subscriber = get_subscriber(subscriber_name, default_filter_level, std::io::stdout);
+        init_subscriber(subscriber);
+    } else {
+        let subscriber = get_subscriber(subscriber_name, default_filter_level, std::io::sink);
+        init_subscriber(subscriber);
+    }
+});
 
 pub struct TestApp {
     pub address: String,
@@ -37,6 +59,10 @@ async fn health_check_works() {
 // if we fail to perform the required setup we can just panic and crash
 // all the things.
 async fn spawn_app() -> TestApp {
+    // The first time `initialize` is invoked the code in `TRACING` is executed.
+    // All other invocations will instead skip execution.
+    Lazy::force(&TRACING);
+
     let listener = TcpListener::bind("127.0.0.1:0").expect("Failed to bind random port");
 
     let port = listener.local_addr().unwrap().port();

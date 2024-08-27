@@ -1,4 +1,4 @@
-use std::{net::TcpListener, sync::Mutex};
+use std::net::TcpListener;
 
 use crate::routes::{health_check, subscribe};
 use actix_web::middleware::Logger;
