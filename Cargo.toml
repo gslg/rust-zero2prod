@@ -41,6 +41,7 @@ tracing-subscriber = { version = "0.3.18", features = [
     "registry",
     "env-filter",
 ] }
+unicode-segmentation = "1.11.0"
 uuid = { version = "1.10.0", features = ["v4"] }
 
 # Using table-like toml syntax to avoid a super-long line!
