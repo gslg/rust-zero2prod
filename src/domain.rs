@@ -36,26 +36,32 @@ impl SubscriberName {
         }
     }
 
-    // The caller gets the inner string,
-    // but they do not have a SubscriberName anymore!
-    // That's because `inner` takes `self` by value,
-    // consuming it according to move semantics
-    pub fn inner(self) -> String {
-        self.0
-    }
+    // // The caller gets the inner string,
+    // // but they do not have a SubscriberName anymore!
+    // // That's because `inner` takes `self` by value,
+    // // consuming it according to move semantics
+    // pub fn inner(self) -> String {
+    //     self.0
+    // }
 
-    // don't do this in our case
-    pub fn inner_mut(&mut self) -> &mut str {
-        // The caller gets a mutable reference to the inner string.
-        // This allows them to perform *arbitrary* changes to
-        // value itself, potentially breaking our invariants!
-        &mut self.0
-    }
+    // // don't do this in our case
+    // pub fn inner_mut(&mut self) -> &mut str {
+    //     // The caller gets a mutable reference to the inner string.
+    //     // This allows them to perform *arbitrary* changes to
+    //     // value itself, potentially breaking our invariants!
+    //     &mut self.0
+    // }
 
-    pub fn inner_ref(&self) -> &str {
-        // The caller gets a shared reference to the inner string.
-        // This gives the caller **read-only** access,
-        // they have no way to compromise our invariants!
+    // pub fn inner_ref(&self) -> &str {
+    //     // The caller gets a shared reference to the inner string.
+    //     // This gives the caller **read-only** access,
+    //     // they have no way to compromise our invariants!
+    //     &self.0
+    // }
+}
+
+impl AsRef<str> for SubscriberName {
+    fn as_ref(&self) -> &str {
         &self.0
     }
 }
